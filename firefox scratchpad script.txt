@@ -1,0 +1,31 @@
+// firefox scratchpad script 
+
+tweets = document.querySelectorAll('.js-stream-tweet .content') ||
+document.querySelectorAll('.timeline');
+parsedTweets = [
+];
+Array.prototype.forEach.call(tweets, function (tweet) {
+  if (tweet.querySelector('.js-action-profile-promoted')) {
+    return 0;
+  }
+  if (tweet.querySelector('.avatar') && $(tweet.querySelector('.fullname')) && $(tweet.querySelector('.username')) && tweet.querySelector('._timestamp') && $(tweet.querySelector('.tweet-text'))) {
+    var img = tweet.querySelector('.avatar').getAttribute('src'),
+    fullname = $(tweet.querySelector('.fullname')).text(),
+    username = $(tweet.querySelector('.username')).text(),
+    time = tweet.querySelector('._timestamp').getAttribute('data-time'),
+    twit = $(tweet.querySelector('.tweet-text')).text();
+    parent = $(tweet.parentNode)
+    retweet = $(parent).text().match("\n(.*)retweets")
+    favorite = $(parent).text().match("\n(.*)favorites")
+    parsedTweets.push({
+      'img': img,
+      'fullname': fullname,
+      'username': username,
+      'time': time,
+      'tweet': twit,
+      'parent': retweet,
+       'favorite': favorite
+    });
+  }
+});
+JSON.stringify(parsedTweets, null, 4)
