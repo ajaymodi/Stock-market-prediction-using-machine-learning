@@ -10,7 +10,13 @@ CSV.open("file.csv", "wb") do |abc|
 		puts row = row.gsub(/https?:\/\/[\S]+/, "")
 		puts row = row.gsub(/[#@$]\w+/, '') 
 		puts row = row.gsub(/pic.twitter.com\/[\S]+/, "") 
-  		
+  		puts row = row.gsub("?", "")
+		puts row = row.gsub("=", "")
+		puts row = row.tr(" '\"", "")
+		puts row = row.gsub("*", "")
+		puts row = row.gsub("+", "")
+		puts row = row.gsub("-", "")
+		puts row = row.gsub("%", "")
   		temp[0] = row
   		abc << temp
 	end
