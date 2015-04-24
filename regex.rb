@@ -6,17 +6,17 @@ CSV.open("file.csv", "wb") do |abc|
 		temp = row
 		row = row[0]
 
-		puts row = row.gsub( /\s+/, " " ) 
-		puts row = row.gsub(/https?:\/\/[\S]+/, "")
-		puts row = row.gsub(/[#@$]\w+/, '') 
-		puts row = row.gsub(/pic.twitter.com\/[\S]+/, "") 
-  		puts row = row.gsub("?", "")
-		puts row = row.gsub("=", "")
-		puts row = row.tr(" '\"", "")
-		puts row = row.gsub("*", "")
-		puts row = row.gsub("+", "")
-		puts row = row.gsub("-", "")
-		puts row = row.gsub("%", "")
+		row = row.gsub( /\s+/, " " ) 
+		row = row.gsub(/https?:\/\/[\S]+/, "")
+		row = row.gsub(/[#@$]\w+/, '') 
+		row = row.gsub(/pic.twitter.com\/[\S]+/, "") 
+  		row = row.gsub("?", "")
+		row = row.gsub("=", "")
+		row = row.gsub(":", "")		
+		row = row.gsub("*", "")
+		row = row.gsub("+", "")
+		row = row.gsub("-", "")
+		row = row.gsub("%", "")
   		temp[0] = row
   		abc << temp
 	end

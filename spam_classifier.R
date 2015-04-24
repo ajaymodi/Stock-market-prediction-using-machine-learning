@@ -16,6 +16,7 @@ library("tm")
 library("e1071")
 library(RWeka)
 library("ada")
+library("caret")
 #Initialize random generator
 set.seed(1245)
 
@@ -89,14 +90,24 @@ trdata=NULL
 #test data set
 tedata=NULL
 
+# for(i in 1:length(tweettable$type)){
+#   if(runif(1)<trdatapercent){
+#     trdata=rbind(trdata,c(tweettable[i,1],tolower(tweettable[i,2])))
+#   }
+#   else{
+#     tedata=rbind(tedata,c(tweettable[i,1],tolower(tweettable[i,2])))
+#   }
+# }
+
 for(i in 1:length(tweettable$type)){
-  if(runif(1)<trdatapercent){
+  if(i<trdatapercent*length(tweettable$type)){
     trdata=rbind(trdata,c(tweettable[i,1],tolower(tweettable[i,2])))
   }
   else{
     tedata=rbind(tedata,c(tweettable[i,1],tolower(tweettable[i,2])))
   }
 }
+
 
 print("Training data size is!")
 dim(trdata)
@@ -152,32 +163,47 @@ for(i in 1:length(tedata[,2])){
 # differnet SVMs with different Kernels 
 print("----------------------------------SVM-----------------------------------------") 
 print("Linear Kernel")
-svmlinmodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1],type='C', kernel='linear');
-summary(svmlinmodel)
-predictionlin <- predict(svmlinmodel, vtedata[,2:length(vtedata[1,])])
-tablinear <- table(pred = predictionlin , true = vtedata[,1]); tablinear
-precisionlin<-sum(diag(tablinear))/sum(tablinear);
-print("General Error using Linear SVM is (in percent):");(1-precisionlin)*100
+
+ svmlinmodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1],type='C', kernel='linear',cost = 40);
+ summary(svmlinmodel)
+ predictionlin <- predict(svmlinmodel, vtedata[,2:length(vtedata[1,])])
+ confusionMatrix(predictionlin, vtedata[,1])
+
+
+# tablinear <- table(pred = predictionlin , true = vtedata[,1]); tablinear
+# precisionlin<-sum(diag(tablinear))/sum(tablinear);
+# print("General Error using Linear SVM is (in percent):");(1-precisionlin)*100
 #print("Ham Error using Linear SVM is (in percent):");(tablinear[1,2]/sum(tablinear[,2]))*100
 #print("Spam Error using Linear SVM is (in percent):");(tablinear[2,1]/sum(tablinear[,1]))*100
 
-print("Polynomial Kernel")
-svmpolymodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1], kernel='polynomial', probability=FALSE)
-summary(svmpolymodel)
-predictionpoly <- predict(svmpolymodel, vtedata[,2:length(vtedata[1,])])
-tabpoly <- table(pred = predictionpoly , true = vtedata[,1]); tabpoly
+ print("Polynomial Kernel")
+ svmpolymodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1], kernel='polynomial',degree=12, probability=FALSE)
+ predictionpoly <- predict(svmpolymodel, vtedata[,2:length(vtedata[1,])])
+ tabpoly <- table(vtedata[,1], round(predictionpoly)); tabpoly
+ precisionpoly<-sum(diag(tabpoly))/sum(tabpoly);
+ print("General Error using Poly SVM is (in percent):");(1-precisionpoly)*100
+
 
 print("Radial Kernel")
-svmradmodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1], kernel = "radial", gamma = 0.09, cost = 1, probability=FALSE)
-summary(svmradmodel)
+svmradmodel <- svm(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1], kernel = "radial", gamma = 0.09, cost = 0.01, cross = 5, probability=FALSE)
 predictionrad <- predict(svmradmodel, vtedata[,2:length(vtedata[1,])])
-tabrad <- table(pred = predictionrad, true = vtedata[,1]); tabrad
+tabrad <- table(vtedata[,1], round(predictionrad)); tabrad
+precisionrad<-sum(diag(tabrad))/sum(tabrad);
+print("General Error using Radial SVM is (in percent):");(1-precisionrad)*100
+
 
 print("----------------------------------KNN-----------------------------------------")
-data<-data.frame(tweet=vtrdata[,2:length(vtrdata[1,])],type=vtrdata[,1])
-classifier <- IBk(data, control = Weka_control(K = 20, X = TRUE))
-summary(classifier)
-evaluate_Weka_classifier(classifier, newdata = data.frame(tweet=vtedata[,2:length(vtedata[1,])],type=vtedata[,1]))
+# data<-data.frame(tweet=vtrdata[,2:length(vtrdata[1,])],type=vtrdata[,1])
+# classifier <- IBk(type ~.,data, control = Weka_control(K = 2, X = TRUE))
+# summary(classifier)
+# evaluate_Weka_classifier(classifier, numFolds = 5)
+# 
+# Knnmodel <- knn(data,vtedata[,2:length(vtedata[1,])],y=vtrdata[,1], k = 2, prob = FALSE, algorithm=c("kd_tree", "cover_tree", "brute"))
+# predictionrad <- predict(svmradmodel, vtedata[,2:length(vtedata[1,])])
+# tabrad <- table(vtedata[,1], round(predictionrad)); tabrad
+# precisionrad<-sum(diag(tabrad))/sum(tabrad);
+# print("General Error using Radial SVM is (in percent):");(1-precisionrad)*100
+
 
 print("---------------------------------Adaboost-------------------------------------")
 adaptiveboost<-ada(x=vtrdata[,2:length(vtrdata[1,])],y=vtrdata[,1],test.x=vtedata[,2:length(vtedata[1,])], test.y=vtedata[,1], loss="logistic", type="gentle", iter=100)
